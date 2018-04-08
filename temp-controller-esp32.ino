@@ -1,11 +1,12 @@
 #include <Arduino.h>
-#include <Wire.h>
+// #include <Wire.h>
 
 
 // Comment out the display your NOT using e.g. if you have a 1.3" display comment out the SSD1306 library and object
-#include "SH1106.h"     // https://github.com/squix78/esp8266-oled-ssd1306
-SH1106 display(0x3c, 17,16); // 1.3" OLED display object definition (address, SDA, SCL) Connect OLED SDA , SCL pins to ESP SDA, SCL pins
-#include "font.h" // The font.h file must be in the same folder as this sketch
+#include "SH1106Spi.h"    // https://github.com/squix78/esp8266-oled-ssd1306
+// SH1106 display(0x3c, 17,16); // 1.3" OLED display object definition (address, SDA, SCL) Connect OLED SDA , SCL pins to ESP SDA, SCL pins
+SH1106Spi display( 5, 19, 0 );
+#include "font.h"    // The font.h file must be in the same folder as this sketch
 
 
 
@@ -38,14 +39,73 @@ void setup( ) {
 	Serial.begin( BAUD_RATE );
 	// reserve 200 bytes for the inputString:
 	inputString.reserve( 200 );
-	u8g2.begin( );
-  // ledc_timer_
+
+	// Wire.begin( 17, 16 );    // SDA, SCL
+	display.init( );
+	display.flipScreenVertically( );    // Adjust to suit or remove
+	// display.setFont(Dialog_plain_8);
+	display.setFont( ArialMT_Plain_10 );
+
+	// ledc_timer_
 }
 
+
+void drawFontFaceDemo( ) {
+	// Font Demo1
+	// create more fonts at http://oleddisplay.squix.ch/
+	display.setTextAlignment( TEXT_ALIGN_LEFT );
+	display.setFont( ArialMT_Plain_10 );
+	display.drawString( 0, 0, "Hello world" );
+	display.setFont( ArialMT_Plain_16 );
+	display.drawString( 0, 10, "Hello world" );
+	display.setFont( ArialMT_Plain_24 );
+	display.drawString( 0, 26, "Hello world" );
+}
+
+
+void drawTextFlowDemo( ) {
+	display.setFont( ArialMT_Plain_10 );
+	display.setTextAlignment( TEXT_ALIGN_LEFT );
+	display.drawStringMaxWidth( 0, 0, 128, "Lorem ipsum\n dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore." );
+}
+
+void drawTextAlignmentDemo( ) {
+	// Text alignment demo
+	display.setFont( ArialMT_Plain_10 );
+
+	// The coordinates define the left starting point of the text
+	display.setTextAlignment( TEXT_ALIGN_LEFT );
+	display.drawString( 0, 10, "Left aligned (0,10)" );
+
+	// The coordinates define the center of the text
+	display.setTextAlignment( TEXT_ALIGN_CENTER );
+	display.drawString( 64, 22, "Center aligned (64,22)" );
+
+	// The coordinates define the right end of the text
+	display.setTextAlignment( TEXT_ALIGN_RIGHT );
+	display.drawString( 128, 33, "Right aligned (128,33)" );
+}
+
+
+
 void loop( ) {
+	// clear the display
+	display.clear( );
+
+
+	// drawFontFaceDemo( );
+	display.setTextAlignment( TEXT_ALIGN_RIGHT );
+	display.setFont( ArialMT_Plain_24 );  
+	display.drawString( 10, 128, String( millis( ) ) );
+	// write the buffer to the display
+	display.display( );
+
+
 	// read the value from the sensor:
 	sensorValue = analogRead( sensorPin );
 
+	Serial.print( millis( ) );
+	Serial.print( " ms || " );
 	Serial.print( sensorValue );
 	Serial.print( " milliVolt || " );
 	Serial.print( centigrade );
@@ -56,10 +116,10 @@ void loop( ) {
 	Serial.print( farenheit );
 	Serial.println( " degrees F" );
 
-	u8g2.clearBuffer( );                      // clear the internal memory
-	u8g2.setFont( u8g2_font_ncenB08_tr );     // choose a suitable font
-	u8g2.drawStr( 0, 10, "Hello World!" );    // write something to the internal memory
-	u8g2.sendBuffer( );                       // transfer internal memory to the display
+
+	// display.clear( );
+	// display.drawString( 0, 0, "125 250 500 1K  2K 4K 8K 16K" );
+	// display.display( );
 	// delay in ms
 	delay( 1000 );
 
@@ -77,6 +137,5 @@ void loop( ) {
 	}
 }
 
-void pwm() {
-
+void pwm( ) {
 }
