@@ -1,13 +1,13 @@
 #include <Arduino.h>
 // #include <Wire.h>
+#include <SPI.h> // Only needed for Arduino 1.6.5 and earlier
 
 
 // Comment out the display your NOT using e.g. if you have a 1.3" display comment out the SSD1306 library and object
 #include "SH1106Spi.h"    // https://github.com/squix78/esp8266-oled-ssd1306
 // SH1106 display(0x3c, 17,16); // 1.3" OLED display object definition (address, SDA, SCL) Connect OLED SDA , SCL pins to ESP SDA, SCL pins
-SH1106Spi display( 5, 19, 0 );
+SH1106Spi display( 22, 1, 5 );
 #include "font.h"    // The font.h file must be in the same folder as this sketch
-
 
 
 /**
@@ -19,7 +19,7 @@ class U8G2_SH1106_128X64_NONAME_1_4W_HW_SPI : public U8G2 {
   }
 };
  */
-int   sensorPin   = A0;    // select the input pin for the potentiometer
+int   sensorPin   = 36;    // select the input pin for the potentiometer
 int   sensorValue = 0;     // variable to store the value coming from the sensor
 float centigrade  = 0;
 float farenheit   = 0;
@@ -50,41 +50,41 @@ void setup( ) {
 }
 
 
-void drawFontFaceDemo( ) {
-	// Font Demo1
-	// create more fonts at http://oleddisplay.squix.ch/
-	display.setTextAlignment( TEXT_ALIGN_LEFT );
-	display.setFont( ArialMT_Plain_10 );
-	display.drawString( 0, 0, "Hello world" );
-	display.setFont( ArialMT_Plain_16 );
-	display.drawString( 0, 10, "Hello world" );
-	display.setFont( ArialMT_Plain_24 );
-	display.drawString( 0, 26, "Hello world" );
-}
+// void drawFontFaceDemo( ) {
+// 	// Font Demo1
+// 	// create more fonts at http://oleddisplay.squix.ch/
+// 	display.setTextAlignment( TEXT_ALIGN_LEFT );
+// 	display.setFont( ArialMT_Plain_10 );
+// 	display.drawString( 0, 0, "Hello world" );
+// 	display.setFont( ArialMT_Plain_16 );
+// 	display.drawString( 0, 10, "Hello world" );
+// 	display.setFont( ArialMT_Plain_24 );
+// 	display.drawString( 0, 26, "Hello world" );
+// }
 
 
-void drawTextFlowDemo( ) {
-	display.setFont( ArialMT_Plain_10 );
-	display.setTextAlignment( TEXT_ALIGN_LEFT );
-	display.drawStringMaxWidth( 0, 0, 128, "Lorem ipsum\n dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore." );
-}
+// void drawTextFlowDemo( ) {
+// 	display.setFont( ArialMT_Plain_10 );
+// 	display.setTextAlignment( TEXT_ALIGN_LEFT );
+// 	display.drawStringMaxWidth( 0, 0, 128, "Lorem ipsum\n dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore." );
+// }
 
-void drawTextAlignmentDemo( ) {
-	// Text alignment demo
-	display.setFont( ArialMT_Plain_10 );
+// void drawTextAlignmentDemo( ) {
+// 	// Text alignment demo
+// 	display.setFont( ArialMT_Plain_10 );
 
-	// The coordinates define the left starting point of the text
-	display.setTextAlignment( TEXT_ALIGN_LEFT );
-	display.drawString( 0, 10, "Left aligned (0,10)" );
+// 	// The coordinates define the left starting point of the text
+// 	display.setTextAlignment( TEXT_ALIGN_LEFT );
+// 	display.drawString( 0, 10, "Left aligned (0,10)" );
 
-	// The coordinates define the center of the text
-	display.setTextAlignment( TEXT_ALIGN_CENTER );
-	display.drawString( 64, 22, "Center aligned (64,22)" );
+// 	// The coordinates define the center of the text
+// 	display.setTextAlignment( TEXT_ALIGN_CENTER );
+// 	display.drawString( 64, 22, "Center aligned (64,22)" );
 
-	// The coordinates define the right end of the text
-	display.setTextAlignment( TEXT_ALIGN_RIGHT );
-	display.drawString( 128, 33, "Right aligned (128,33)" );
-}
+// 	// The coordinates define the right end of the text
+// 	display.setTextAlignment( TEXT_ALIGN_RIGHT );
+// 	display.drawString( 128, 33, "Right aligned (128,33)" );
+// }
 
 
 
@@ -96,7 +96,7 @@ void loop( ) {
 	// drawFontFaceDemo( );
 	display.setTextAlignment( TEXT_ALIGN_RIGHT );
 	display.setFont( ArialMT_Plain_24 );  
-	display.drawString( 10, 128, String( millis( ) ) );
+	display.drawString( 10, 64, String( millis( ) ) );
 	// write the buffer to the display
 	display.display( );
 
