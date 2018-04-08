@@ -1,0 +1,165 @@
+# .clang-format
+# Eric D. Hiller
+# 2018 February 12
+# reference:
+#     <http://clang.llvm.org/docs/ClangFormatStyleOptions.html>
+
+# To convert to a Value: 'quoted' format
+# which is required for https://zed0.co.uk/clang-format-configurator/
+# use the regex search: \n(?=\n{1,2}[#A-Za-z])
+# and replace with '\n
+
+# view a default styled config with
+# clang-format -style=WebKit -dump-config
+
+AlignAfterOpenBracket: Align
+
+AlignConsecutiveAssignments: true
+
+AlignConsecutiveDeclarations: true
+
+AlignOperands: true
+
+AlignTrailingComments: true
+
+AllowAllParametersOfDeclarationOnNextLine: true
+
+AllowShortBlocksOnASingleLine: true
+
+AllowShortCaseLabelsOnASingleLine: false
+
+AllowShortFunctionsOnASingleLine: Empty
+
+AllowShortIfStatementsOnASingleLine: true
+
+AllowShortLoopsOnASingleLine: false
+
+AlwaysBreakAfterDefinitionReturnType: None
+
+AlwaysBreakAfterReturnType: None
+
+AlwaysBreakBeforeMultilineStrings: false
+
+AlwaysBreakTemplateDeclarations: false
+
+BinPackArguments: false
+
+BinPackParameters: false
+
+# only if BreakBeforeBraces is set to Custom
+BraceWrapping:
+#   AfterClass:      false
+  # AfterControlStatement: true
+#   AfterEnum:       false
+#   AfterFunction:   true
+#   AfterNamespace:  false
+#   AfterObjCDeclaration: false
+  AfterStruct:     true
+  AfterUnion:      true
+  # AfterExternBlock: false
+#   BeforeCatch:     false
+  # BeforeElse:      true
+#   IndentBraces:    false
+#   SplitEmptyFunction: true
+#   SplitEmptyRecord: true
+#   SplitEmptyNamespace: true
+
+BreakBeforeBraces: Custom
+
+BreakBeforeInheritanceComma: false
+
+BreakBeforeBinaryOperators: None
+
+BreakBeforeTernaryOperators: false
+
+# See if vscode will inject its config here
+# ideally I want unlimited (config of 0)
+ColumnLimit: 0
+
+CompactNamespaces: false
+
+# I'd rather have one parameter per line
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+ConstructorInitializerIndentWidth: 4
+
+ContinuationIndentWidth: 4
+
+# may or may not work
+# ExperimentalAutoDetectBinPacking: true
+
+FixNamespaceComments: true
+
+IncludeBlocks: Regroup
+
+# I don't think I need to set this, it pertains to include blocks
+# IncludeCategories
+
+IndentCaseLabels: true
+
+# The preprocessor directive indenting style to use.
+# Options:    None      //or//      AfterHash
+IndentPPDirectives: None
+
+# try leaving blank, vscode defaults
+IndentWidth: 4
+
+IndentWrappedFunctionNames: true
+
+JavaScriptQuotes: Double
+
+JavaScriptWrapImports: true
+
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# set language Target, optional
+# I'd say don't, but it could be
+# Language Cpp
+
+MaxEmptyLinesToKeep: 5
+
+NamespaceIndentation: Inner
+
+# see penalty* configs
+# leaving unconfigured for now
+
+PointerAlignment: Right
+
+ReflowComments: false
+
+SortIncludes: false
+
+SortUsingDeclarations: true
+
+SpaceAfterCStyleCast: false
+
+SpaceAfterTemplateKeyword: false
+
+SpaceBeforeAssignmentOperators: true
+
+SpaceBeforeParens: Never
+
+# try at least , not 100% sold
+SpaceInEmptyParentheses: true
+
+
+SpacesBeforeTrailingComments: 4
+
+SpacesInAngles: false
+
+SpacesInCStyleCastParentheses: false
+
+SpacesInContainerLiterals: true
+
+SpacesInParentheses: true
+
+SpacesInSquareBrackets: false
+
+Standard:        Cpp11
+
+# It did not inherit vscode's settings
+TabWidth: 4
+
+# It did not inherit vscode's settings
+# ForIndentation      //or//           Always
+UseTab: ForIndentation
