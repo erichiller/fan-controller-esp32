@@ -14,6 +14,12 @@
 // #include "font.h"    // The font.h file must be in the same folder as this sketch
 
 U8G2_SH1106_128X64_NONAME_1_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
+// U8G2_SH1106_128X64_NONAME_2_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
+// U8G2_SH1106_128X64_VCOMH0_1_4W_HW_SPI
+// U8G2_SH1106_128X64_VCOMH0_2_4W_HW_SPI
+// U8G2_SH1106_128X64_WINSTAR_1_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
+// U8G2_SH1106_128X64_WINSTAR_2_4W_HW_SPI
+							// 1,2,F
 
 int   sensorPin   = 35;    // select the input pin for the potentiometer
 int   sensorValue = 0;     // variable to store the value coming from the sensor
@@ -28,9 +34,10 @@ String inputString = "";    // a String to hold incoming data
 
 /** Menu
  */
-uint8_t MENU_pin_select = 15;    // button. must connect other side to ground
-uint8_t MENU_pin_next   = 4;    // button. must connect other side to ground
+uint8_t MENU_pin_select = 4;    // button. must connect other side to ground
+uint8_t MENU_pin_next   = 0;    // button. must connect other side to ground
 uint8_t MENU_pin_prev   = 2;    // button. must connect other side to ground
+uint8_t MENU_pin_up     = 26;
 
 
 // NOTE:  The most recent version of the encoder from github is required
@@ -53,8 +60,10 @@ static void setup_mcpwm( );
 
 
 void setup( ) {
-	pinMode( MENU_pin_select, INPUT_PULLUP );
-	pinMode( MENU_pin_next, INPUT_PULLDOWN );
+	pinMode( MENU_pin_select, INPUT_PULLDOWN );
+	pinMode( MENU_pin_next, INPUT_PULLUP );
+	// pinMode( MENU_pin_prev, INPUT_PULLDOWN );
+	// pinMode( MENU_pin_up, INPUT_PULLUP );
 
 
 	// Set up serial port.
@@ -68,7 +77,7 @@ void setup( ) {
 
 	init_PWM_based_on_state( );
 
-	u8g2.begin( MENU_pin_select, MENU_pin_next, MENU_pin_prev, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE );    // https://github.com/olikraus/u8g2/wiki/u8g2reference#begin
+	u8g2.begin( analogInputToDigitalPin(MENU_pin_select), analogInputToDigitalPin(MENU_pin_next), analogInputToDigitalPin(MENU_pin_prev), MENU_pin_up, U8X8_PIN_NONE, U8X8_PIN_NONE );    // https://github.com/olikraus/u8g2/wiki/u8g2reference#begin
 }
 
 
@@ -78,43 +87,6 @@ enum States {
 	MAX_STATES
 };                                           // enum States
 static int values[MAX_STATES] = {50, 50};    // Initialized duty cycle and frequency to 50%
-
-
-// void drawFontFaceDemo( ) {
-// 	// Font Demo1
-// 	// create more fonts at http://oleddisplay.squix.ch/
-// 	display.setTextAlignment( TEXT_ALIGN_LEFT );
-// 	display.setFont( ArialMT_Plain_10 );
-// 	display.drawString( 0, 0, "Hello world" );
-// 	display.setFont( ArialMT_Plain_16 );
-// 	display.drawString( 0, 10, "Hello world" );
-// 	display.setFont( ArialMT_Plain_24 );
-// 	display.drawString( 0, 26, "Hello world" );
-// }
-
-
-// void drawTextFlowDemo( ) {
-// 	display.setFont( ArialMT_Plain_10 );
-// 	display.setTextAlignment( TEXT_ALIGN_LEFT );
-// 	display.drawStringMaxWidth( 0, 0, 128, "Lorem ipsum\n dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore." );
-// }
-
-// void drawTextAlignmentDemo( ) {
-// 	// Text alignment demo
-// 	display.setFont( ArialMT_Plain_10 );
-
-// 	// The coordinates define the left starting point of the text
-// 	display.setTextAlignment( TEXT_ALIGN_LEFT );
-// 	display.drawString( 0, 10, "Left aligned (0,10)" );
-
-// 	// The coordinates define the center of the text
-// 	display.setTextAlignment( TEXT_ALIGN_CENTER );
-// 	display.drawString( 64, 22, "Center aligned (64,22)" );
-
-// 	// The coordinates define the right end of the text
-// 	display.setTextAlignment( TEXT_ALIGN_RIGHT );
-// 	display.drawString( 128, 33, "Right aligned (128,33)" );
-// }
 
 
 char buf_temp[16];
@@ -173,8 +145,28 @@ void loop( ) {
 			sprintf( print_action, "%s", "menu_select" );
 			Serial.println( print_action );
 			break;
+		case U8X8_MSG_GPIO_MENU_NEXT:
+			sprintf( print_action, "%s", "MENU_NEXT" );
+			Serial.println( print_action );
+			break;
+		case U8X8_MSG_GPIO_MENU_PREV:
+			sprintf( print_action, "%s", "MENU_PREV" );
+			Serial.println( print_action );
+			break;
+		case U8X8_MSG_GPIO_MENU_UP:
+			sprintf( print_action, "%s", "MENU_UP" );
+			Serial.println( print_action );
+			break;
+		case U8X8_MSG_GPIO_MENU_DOWN:
+			sprintf( print_action, "%s", "MENU_down" );
+			Serial.println( print_action );
+			break;
+		case U8X8_MSG_GPIO_MENU_HOME:
+			sprintf( print_action, "%s", "MENU_home" );
+			Serial.println( print_action );
+			break;
 		default:
-			sprintf( print_action, "%s %i", "pressed:", event );
+			sprintf( print_action, "%s %i", "DEFAULT pressed:", event );
 			Serial.println( print_action );
 			break;
 	}
@@ -192,6 +184,22 @@ void loop( ) {
 		Serial.print( "LOW" );
 	}
 	if( digitalRead( MENU_pin_next ) == HIGH ) {
+		Serial.print( "HIGH" );
+	}
+	Serial.println("");
+	Serial.print("MENU_pin_prev == ");	
+	if( digitalRead( MENU_pin_prev ) == LOW ) {
+		Serial.print( "LOW" );
+	}
+	if( digitalRead( MENU_pin_prev ) == HIGH ) {
+		Serial.print( "HIGH" );
+	}
+	Serial.println("");
+	Serial.print("MENU_pin_up == ");	
+	if( digitalRead( MENU_pin_up ) == LOW ) {
+		Serial.print( "LOW" );
+	}
+	if( digitalRead( MENU_pin_up ) == HIGH ) {
 		Serial.print( "HIGH" );
 	}
 	Serial.println("");
