@@ -22,7 +22,8 @@
 
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/SPI/src",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/Wire/src",
-                "${workspaceRoot}/../../../../src/libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display/src"
+                "${workspaceRoot}/../../../../src/libraries/U8g2/src",
+                "${workspaceRoot}/../../../../src/libraries/U8g2/src/clib"
                 
             ],
             "defines": [
@@ -36,7 +37,8 @@
                 "path": [
                     "${workspaceRoot}",
                     "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/variants/esp32",
-                    "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries"
+                    "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries",
+                    "${workspaceRoot}/../../../../src/libraries/U8g2/src"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
