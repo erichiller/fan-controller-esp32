@@ -23,6 +23,7 @@
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/xtensa-esp32-elf/xtensa-esp32-elf/sysroot/usr/include",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/freertos",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/xtensa",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/esp_adc_cal",
 
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/SPI/src",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/Wire/src",
