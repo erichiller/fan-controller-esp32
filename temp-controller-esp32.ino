@@ -1,5 +1,5 @@
 #include <Arduino.h>
-// #include <Wire.h>
+#include <WiFi.h>
 #include <U8g2lib.h>
 
 
@@ -7,11 +7,7 @@
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
-// Comment out the display your NOT using e.g. if you have a 1.3" display comment out the SSD1306 library and object
-// #include "SH1106Spi.h"    // https://github.com/squix78/esp8266-oled-ssd1306
-// SH1106 display(0x3c, 17,16); // 1.3" OLED display object definition (address, SDA, SCL) Connect OLED SDA , SCL pins to ESP SDA, SCL pins
-// SH1106Spi display( 22, 1, 5 );
-// #include "font.h"    // The font.h file must be in the same folder as this sketch
+#include "secrets.h"
 
 U8G2_SH1106_128X64_NONAME_1_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
 // U8G2_SH1106_128X64_NONAME_2_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
@@ -19,14 +15,17 @@ U8G2_SH1106_128X64_NONAME_1_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* r
 // U8G2_SH1106_128X64_VCOMH0_2_4W_HW_SPI
 // U8G2_SH1106_128X64_WINSTAR_1_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
 // U8G2_SH1106_128X64_WINSTAR_2_4W_HW_SPI
-							// 1,2,F
+// 1,2,F
 
-int   sensorPin   = 35;    // select the input pin for the potentiometer
+int   sensorPin   = 33;    // select the input pin for the Sensor :: Pin 35 is ADC1_CHANNEL_7
 int   sensorValue = 0;     // variable to store the value coming from the sensor
 float centigrade  = 0;
 float farenheit   = 0;
 
 #define BAUD_RATE 115200
+
+#define WIFI_TIMEOUT 15000 // 15s timeout
+WiFiServer server( 80 );
 
 
 /*** GLOBALS ***/
@@ -34,10 +33,12 @@ String inputString = "";    // a String to hold incoming data
 
 /** Menu
  */
-uint8_t MENU_pin_select = 4;    // button. must connect other side to ground
-uint8_t MENU_pin_next   = 0;    // button. must connect other side to ground
-uint8_t MENU_pin_prev   = 2;    // button. must connect other side to ground
-uint8_t MENU_pin_up     = 26;
+uint8_t MENU_pin_select = 25;    // button. must connect other side to ground
+uint8_t MENU_pin_next   = 26;    // button. must connect other side to ground
+uint8_t MENU_pin_prev   = 32;    // button. must connect other side to ground
+uint8_t MENU_pin_up     = 4;
+uint8_t MENU_pin_down   = 12;
+uint8_t MENU_pin_home   = 14;
 
 
 // NOTE:  The most recent version of the encoder from github is required
@@ -55,15 +56,10 @@ static void init_PWM_based_on_state( void );
 static void set_frequency( uint32_t freq );
 static void set_duty_cycle( float dc );
 static void setup_mcpwm( );
-static void setup_mcpwm( );
 
 
 
 void setup( ) {
-	pinMode( MENU_pin_select, INPUT_PULLDOWN );
-	pinMode( MENU_pin_next, INPUT_PULLUP );
-	// pinMode( MENU_pin_prev, INPUT_PULLDOWN );
-	// pinMode( MENU_pin_up, INPUT_PULLUP );
 
 
 	// Set up serial port.
@@ -71,13 +67,35 @@ void setup( ) {
 	// reserve 200 bytes for the inputString:
 	inputString.reserve( 200 );
 
+	int wifi_begin = millis();
+	WiFi.begin( ssid, password );
 
+	while( WiFi.status( ) != WL_CONNECTED && !WiFi.localIP( ) && millis() < wifi_begin+15000) {
+		delay( 500 );
+		Serial.print( "." );
+	}
+
+	pinMode( MENU_pin_select, INPUT_PULLUP );
+	pinMode( MENU_pin_next, INPUT_PULLUP );
+	pinMode( MENU_pin_prev, INPUT_PULLUP );
+	pinMode( MENU_pin_up, INPUT_PULLUP );
+	pinMode( MENU_pin_down, INPUT_PULLUP );
+	pinMode( MENU_pin_home, INPUT_PULLUP );
+
+	Serial.println( "" );
+	Serial.println( "WiFi connected." );
+	Serial.println( "IP address: " );
+	Serial.println( WiFi.localIP( ) );
+	server.begin( );
 
 	setup_mcpwm( );
 
 	init_PWM_based_on_state( );
 
-	u8g2.begin( analogInputToDigitalPin(MENU_pin_select), analogInputToDigitalPin(MENU_pin_next), analogInputToDigitalPin(MENU_pin_prev), MENU_pin_up, U8X8_PIN_NONE, U8X8_PIN_NONE );    // https://github.com/olikraus/u8g2/wiki/u8g2reference#begin
+	// u8g2.begin( analogInputToDigitalPin( MENU_pin_select ), analogInputToDigitalPin( MENU_pin_next ), analogInputToDigitalPin( MENU_pin_prev ), analogInputToDigitalPin( MENU_pin_up ), MENU_pin_down, MENU_pin_home );    // https://github.com/olikraus/u8g2/wiki/u8g2reference#begin
+	u8g2.begin( MENU_pin_select , MENU_pin_next,  MENU_pin_prev ,  MENU_pin_up , MENU_pin_down, MENU_pin_home );    // https://github.com/olikraus/u8g2/wiki/u8g2reference#begin
+
+	Serial.println( "pins set" );
 }
 
 
@@ -93,6 +111,89 @@ char buf_temp[16];
 char buf_time[16];
 char print_action[20] = "none";
 void loop( ) {
+	// Serial.println( "creating client wifi" );
+	WiFiClient client = server.available( );    // listen for incoming clients
+	uint8_t    r;
+
+	// while( true ) {
+	// 	u8g2.setFont( u8x8_font_chroma48medium8_r );
+	// 	r = u8g2.userInterfaceMessage( "Message", "Box", NULL, " Ok \n Cancel " );
+	// 	Serial.println( "userInterfaceMessage ... " );
+	// 	if( r == 0 ) {
+	// 		u8g2.userInterfaceMessage( "You pressed the", "Home/Quit", "Button", " Ok " );
+	// 		Serial.println( "was 0" );
+
+	// 	} else if( r == 1 ) {
+	// 		u8g2.userInterfaceMessage( "You selected the", "Ok", "Button", " Ok " );
+	// 		Serial.println( "was 1" );
+
+	// 	} else if( r == 2 ) {
+	// 		u8g2.userInterfaceMessage( "You selected the", "Cancel", "Button", " Ok " );
+	// 		Serial.println( "was 2" );
+	// 	}
+	// }
+
+	if( client ) {
+		Serial.println( "New Client" );
+		String currentLine = "";
+		while( client.connected( ) ) {
+			if( client.available( ) ) {
+				char c = client.read( );
+				Serial.write( c );
+				if( c == '\n' ) {
+					// if the current line is blank, you got two newline characters in a row.
+					// that's the end of the client HTTP request, so send a response:
+					if( currentLine.length( ) == 0 ) {
+						// HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+						// and a content-type so the client knows what's coming, then a blank line:
+						client.println( "HTTP/1.1 200 OK" );
+						client.println( "Content-type:text/html" );
+						client.println( );
+
+						// the content of the HTTP response follows the header:
+						client.print( "<b>STATUS:</b> " );
+						client.print( values[0] );
+						client.print( "<br /><br /><a href=\"/H\">UP</a><a href=\"/HT\">+10</a><br />>" );
+						client.print( "<a href=\"/L\">DOWN</a><a href=\"/LT\">-10</a><br>" );
+
+						// The HTTP response ends with another blank line:
+						client.println( );
+						// break out of the while loop:
+						break;
+					} else {    // if you got a newline, then clear currentLine:
+						currentLine = "";
+					}
+				} else if( c != '\r' ) {    // if you got anything else but a carriage return character,
+					currentLine += c;       // add it to the end of the currentLine
+				}
+
+				// Check to see if the client request was "GET /H" or "GET /L":
+				if( currentLine.endsWith( "GET /H" ) ) {
+					// digitalWrite( 5, HIGH );    // GET /H turns the LED on
+					values[0]++;
+					init_PWM_based_on_state( );
+				}
+				if( currentLine.endsWith( "GET /HT" ) ) {
+					// digitalWrite( 5, HIGH );    // GET /H turns the LED on
+					values[0]=values[0]+10;
+					init_PWM_based_on_state( );
+				}
+				if( currentLine.endsWith( "GET /L" ) ) {
+					values[0]--;
+					init_PWM_based_on_state( );
+					// digitalWrite( 5, LOW );    // GET /L turns the LED off
+				}
+				if( currentLine.endsWith( "GET /LT" ) ) {
+					values[0]=values[0]-10;
+					init_PWM_based_on_state( );
+					// digitalWrite( 5, LOW );    // GET /L turns the LED off
+				}
+			}
+		}
+		// close the connection:
+		client.stop( );
+		Serial.println( "Client Disconnected." );
+	}
 	/******************************************
 	 ****  read the value from the sensor: ****
 	 ******************************************/
@@ -130,10 +231,6 @@ void loop( ) {
 	} while( u8g2.nextPage( ) );
 
 
-	// display.clear( );
-	// display.drawString( 0, 0, "125 250 500 1K  2K 4K 8K 16K" );
-	// display.display( );
-	// delay in ms
 	delay( 1000 );
 
 	/******************************************
@@ -165,44 +262,64 @@ void loop( ) {
 			sprintf( print_action, "%s", "MENU_home" );
 			Serial.println( print_action );
 			break;
+		case 0:
+			sprintf( print_action, "%s", "==== 0 ====" );
+			Serial.println( print_action );
+			break;
 		default:
 			sprintf( print_action, "%s %i", "DEFAULT pressed:", event );
 			Serial.println( print_action );
 			break;
 	}
 
-	Serial.print("MENU_pin_select == ");
+	Serial.print( "MENU_pin_select == " );
 	if( digitalRead( MENU_pin_select ) == LOW ) {
 		Serial.print( "LOW" );
 	}
 	if( digitalRead( MENU_pin_select ) == HIGH ) {
 		Serial.print( "HIGH" );
 	}
-	Serial.println("");
-	Serial.print("MENU_pin_next == ");	
+	Serial.println( "" );
+	Serial.print( "MENU_pin_next == " );
 	if( digitalRead( MENU_pin_next ) == LOW ) {
 		Serial.print( "LOW" );
 	}
 	if( digitalRead( MENU_pin_next ) == HIGH ) {
 		Serial.print( "HIGH" );
 	}
-	Serial.println("");
-	Serial.print("MENU_pin_prev == ");	
+	Serial.println( "" );
+	Serial.print( "MENU_pin_prev == " );
 	if( digitalRead( MENU_pin_prev ) == LOW ) {
 		Serial.print( "LOW" );
 	}
 	if( digitalRead( MENU_pin_prev ) == HIGH ) {
 		Serial.print( "HIGH" );
 	}
-	Serial.println("");
-	Serial.print("MENU_pin_up == ");	
+	Serial.println( "" );
+	Serial.print( "MENU_pin_up == " );
 	if( digitalRead( MENU_pin_up ) == LOW ) {
 		Serial.print( "LOW" );
 	}
 	if( digitalRead( MENU_pin_up ) == HIGH ) {
 		Serial.print( "HIGH" );
 	}
-	Serial.println("");
+	Serial.println( "" );
+	Serial.print( "MENU_pin_down == " );
+	if( digitalRead( MENU_pin_down ) == LOW ) {
+		Serial.print( "LOW" );
+	}
+	if( digitalRead( MENU_pin_down ) == HIGH ) {
+		Serial.print( "HIGH" );
+	}
+	Serial.println( "" );
+	Serial.print( "MENU_pin_home == " );
+	if( digitalRead( MENU_pin_home ) == LOW ) {
+		Serial.print( "LOW" );
+	}
+	if( digitalRead( MENU_pin_home ) == HIGH ) {
+		Serial.print( "HIGH" );
+	}
+	Serial.println( "" );
 
 
 	// print the string when a newline arrives:

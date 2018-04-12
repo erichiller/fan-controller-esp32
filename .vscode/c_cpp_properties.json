@@ -16,13 +16,18 @@
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/config",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/esp32",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/soc",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/tcpip_adapter",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/lwip",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/vfs",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/xtensa-esp32-elf/xtensa-esp32-elf/include/c++/5.2.0/xtensa-esp32-elf",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/xtensa-esp32-elf/xtensa-esp32-elf/sysroot/usr/include",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/freertos",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/tools/sdk/include/xtensa",
 
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/SPI/src",
                 "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/Wire/src",
-                "${workspaceRoot}/../../../../src/libraries/ESP8266_and_ESP32_Oled_Driver_for_SSD1306_display/src",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/WiFi/src",
+                "${workspaceRoot}/../../../../arduino/hardware/espressif/esp32/libraries/WiFi/src",
                 "${workspaceRoot}/../../../../src/libraries/U8g2/src",
                 "${workspaceRoot}/../../../../src/libraries/Encoder"
                 
