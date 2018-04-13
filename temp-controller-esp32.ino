@@ -6,6 +6,7 @@
 #include "driver/ledc.h"
 #include "soc/ledc_reg.h"
 #include "soc/ledc_struct.h"
+#include "soc/adc_channel.h"
 
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
@@ -19,10 +20,13 @@
 
 U8G2_SH1106_128X64_NONAME_1_4W_HW_SPI u8g2( U8G2_R0, /* cs=*/5, /* dc=*/21, /* reset=*/22 );
 
-int   sensorPin   = 33;    // select the input pin for the Sensor :: Pin 35 is ADC1_CHANNEL_7
-int   sensorValue = 0;     // variable to store the value coming from the sensor
-float centigrade  = 0;
-float farenheit   = 0;
+#define sensor_adc_atten ADC_ATTEN_11db
+#define sensor_adc_resolution ADC_WIDTH_BIT_12
+adc1_channel_t sensor_adc_channel = ADC1_GPIO33_CHANNEL;
+int            sensorPin          = 33;    // select the input pin for the Sensor :: Pin 35 is ADC1_CHANNEL_7
+int            sensorValue        = 0;     // variable to store the value coming from the sensor
+float          centigrade         = 0;
+float          farenheit          = 0;
 
 int      PWM_PIN     = 19;
 uint32_t DUTY_MAX    = pow( 2, (double)DUTY_RESOLUTION );
@@ -47,7 +51,7 @@ WiFiServer server( 80 );
 
 
 /*** GLOBALS ***/
-char commandBuf[commandBuf_MAX]     = "";    // a String to hold incoming data
+char commandBuf[commandBuf_MAX] = "";    // a String to hold incoming data
 
 /** Menu
  */
@@ -81,6 +85,9 @@ void setup( ) {
 		delay( 500 );
 		Serial.print( "." );
 	}
+	/*** ADC ***/
+	adc1_config_channel_atten(sensor_adc_channel, sensor_adc_atten);
+	adc1_config_width(sensor_adc_resolution);
 
 	Serial.println( "\n:LEDC INIT VALUES\nledc_timer.duty_resolution:\t" + String( ledc_timer.duty_resolution ) + "\n"
 	                                                                                                              "ledc_channel.freq_hz:\t" +
@@ -176,22 +183,22 @@ void loop( ) {
 	 ****  read the value from the sensor: ****
 	 ******************************************/
 	analogRead( sensorPin );
-	delay(10);
+	delay( 10 );
 	sensorValue = analogRead( sensorPin );
 
-	// Serial.print( millis( ) );
-	// Serial.print( " ms || " );
-	// Serial.print( sensorValue );
-	// Serial.print( " milliVolt || " );
-	// Serial.print( centigrade );
-	// Serial.print( " degrees C || " );
+	Serial.print( millis( ) );
+	Serial.print( " ms || " );
+	Serial.print( sensorValue );
+	Serial.print( " milliVolt || " );
+	Serial.print( centigrade );
+	Serial.print( " degrees C || " );
 
 	centigrade = ( sensorValue - 500 ) / 10;
 	farenheit  = ( centigrade * 9.0 / 5.0 ) + 32.0;
-	// Serial.print( farenheit );
-	// Serial.println( " degrees F" );
+	Serial.print( farenheit );
+	Serial.println( " degrees F" );
 
-	measure_adc_multisample_raw();
+	measure_adc_multisample_raw( );
 
 
 
@@ -321,15 +328,15 @@ void loop( ) {
 			parseCommand( commandBuf );
 
 			// clear the string:
-			memset(commandBuf, 0 , commandBuf_MAX);
+			memset( commandBuf, 0, commandBuf_MAX );
 		}
 	}
 }
 
 void parseCommand( char *commandBuf ) {
-	Serial.println("parsing command: " + (String)commandBuf);
-	if( strcmp(commandBuf,"SET DUTY" ) == 0 ) {
-		int new_pwm_percent = ((String)commandBuf).substring( 9 ).toInt( );
+	Serial.println( "parsing command: " + (String)commandBuf );
+	if( strcmp( commandBuf, "SET DUTY" ) == 0 ) {
+		int new_pwm_percent = ( (String)commandBuf ).substring( 9 ).toInt( );
 		Serial.println( "Setting new duty cycle percentage to:" + new_pwm_percent );
 		set_duty_percent( new_pwm_percent );
 	}
@@ -337,37 +344,36 @@ void parseCommand( char *commandBuf ) {
 	commandBuf = "";
 }
 
-int NO_OF_SAMPLES = 64;
-adc_unit_t ADC_UNIT = ADC_UNIT_1;
+int        NO_OF_SAMPLES = 64;
+adc_unit_t ADC_UNIT      = ADC_UNIT_1;
 
 
-void measure_adc_multisample_raw(){
+void measure_adc_multisample_raw( ) {
 	static esp_adc_cal_characteristics_t *adc_chars;
 
-	adc_chars = (esp_adc_cal_characteristics_t*)calloc(1, sizeof(esp_adc_cal_characteristics_t));
-	esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT, ADC_ATTEN_11db, ADC_WIDTH_BIT_12, 1100, adc_chars);
+	adc_chars                    = (esp_adc_cal_characteristics_t *)calloc( 1, sizeof( esp_adc_cal_characteristics_t ) );
+	esp_adc_cal_value_t val_type = esp_adc_cal_characterize( ADC_UNIT, sensor_adc_atten, sensor_adc_resolution, 1180, adc_chars );
 	//Check type of calibration value used to characterize ADC
-	Serial.println(val_type);
+	Serial.println( val_type );
 	//Continuously sample ADC1
-	while (1) {
+	// while( 1 ) {
 		uint32_t adc_reading = 0;
 		//Multisampling
-		for (int i = 0; i < NO_OF_SAMPLES; i++) {
-			if (ADC_UNIT == ADC_UNIT_1) {
-				adc_reading += adc1_get_raw((adc1_channel_t)sensorPin);
+		for( int i = 0; i < NO_OF_SAMPLES; i++ ) {
+			if( ADC_UNIT == ADC_UNIT_1 ) {
+				adc_reading += adc1_get_raw( (adc1_channel_t)sensor_adc_channel );
 			} else {
 				int raw;
-				adc2_get_raw((adc2_channel_t)sensorPin, ADC_WIDTH_BIT_12, &raw);
+				adc2_get_raw( (adc2_channel_t)sensorPin, ADC_WIDTH_BIT_12, &raw );
 				adc_reading += raw;
 			}
 		}
 		adc_reading /= NO_OF_SAMPLES;
 		//Convert adc_reading to voltage in mV
-		uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
-		printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
-		vTaskDelay(pdMS_TO_TICKS(1000));
-	}
-
+		uint32_t voltage = esp_adc_cal_raw_to_voltage( adc_reading, adc_chars );
+		printf( "Raw: %d\tVoltage: %dmV\n", adc_reading, voltage );
+		vTaskDelay( pdMS_TO_TICKS( 1000 ) );
+	// }
 }
 
 
