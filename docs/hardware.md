@@ -1,0 +1,1 @@
+https://espressif-docs.readthedocs-hosted.com/projects/esp-idf/en/latest/get-started/get-started-devkitc.html

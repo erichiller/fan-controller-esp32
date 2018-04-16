@@ -1,1 +1,4 @@
 secrets.h
+build/
+components/
+./esp-idf/*

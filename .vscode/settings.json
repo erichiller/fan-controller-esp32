@@ -3,4 +3,15 @@
 	"C_Cpp.clang_format_fallbackStyle": "WebKit",
 	"C_Cpp.clang_format_path": "C:/Users/ehiller/AppData/Local/omega/bin/clang-format.exe",
 	"C_Cpp.clang_format_style": "file",
+	"files.associations": {
+		"*.txt": "markdown",
+		"*_vimrc": "viml",
+		"CMakeLists.txt": "cmake",
+		".clang-format": "yaml",
+		"secrets.h": "c",
+		"config.h": "c",
+		"netdb.h": "c",
+		"esp_wifi.h": "c",
+		"event_groups.h": "c"
+	},
 }
