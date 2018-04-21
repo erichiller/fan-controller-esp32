@@ -9,3 +9,4 @@ PROJECT_NAME := fan-controller-esp32
 
 
 include $(IDF_PATH)/make/project.mk
+CFLAGS += -D U8X8_USE_PINS

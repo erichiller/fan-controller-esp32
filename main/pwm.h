@@ -7,6 +7,7 @@
 extern uint32_t  PWM_PERCENT;
 
 extern ledc_channel_config_t ledc_channel;
+extern ledc_timer_config_t   ledc_timer;
 
 void set_duty_percent( int percent );
 void set_ledc_channel_config( );

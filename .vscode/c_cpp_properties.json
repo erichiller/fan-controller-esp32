@@ -74,7 +74,8 @@
             "defines": [
 
                 "IDF_VER=v3.1-dev-388-gc3bec5b1-dirty",
-                "ESP_PLATFORM"
+                "ESP_PLATFORM",
+                "U8X8_USE_PINS"
             ],
             "browse": {
                 "path": [

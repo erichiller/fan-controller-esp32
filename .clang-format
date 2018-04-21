@@ -12,7 +12,7 @@
 # view a default styled config with
 # clang-format -style=WebKit -dump-config
 
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: AlwaysBreak
 
 AlignConsecutiveAssignments: true
 
@@ -50,7 +50,7 @@ BinPackParameters: false
 BraceWrapping:
 #   AfterClass:      false
   # AfterControlStatement: true
-#   AfterEnum:       false
+  AfterEnum:       true
 #   AfterFunction:   true
 #   AfterNamespace:  false
 #   AfterObjCDeclaration: false
@@ -61,8 +61,8 @@ BraceWrapping:
   # BeforeElse:      true
 #   IndentBraces:    false
 #   SplitEmptyFunction: true
-#   SplitEmptyRecord: true
-#   SplitEmptyNamespace: true
+  # SplitEmptyRecord: true
+  SplitEmptyNamespace: true
 
 BreakBeforeBraces: Custom
 
@@ -72,18 +72,25 @@ BreakBeforeBinaryOperators: None
 
 BreakBeforeTernaryOperators: false
 
+BreakStringLiterals: false
+
+
 # See if vscode will inject its config here
 # ideally I want unlimited (config of 0)
+# ColumnLimit: 100
 ColumnLimit: 0
 
 CompactNamespaces: false
 
+# BreakConstructorInitializers: BeforeComma
 # I'd rather have one parameter per line
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 
 ConstructorInitializerIndentWidth: 4
 
 ContinuationIndentWidth: 4
+
+# Cpp11BracedListStyle: true
 
 # may or may not work
 # ExperimentalAutoDetectBinPacking: true
@@ -141,7 +148,6 @@ SpaceBeforeParens: Never
 
 # try at least , not 100% sold
 SpaceInEmptyParentheses: true
-
 
 SpacesBeforeTrailingComments: 4
 

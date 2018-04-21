@@ -14,7 +14,7 @@ const int PWM_PIN = 19;
 uint32_t  PWM_PERCENT = 50;
 uint32_t  DUTY_MAX;
 ledc_timer_config_t   ledc_timer = {};
-ledc_channel_config_t ledc_channel;
+// ledc_channel_config_t ledc_channel;
 
 
 void set_duty_percent( int percent ) {

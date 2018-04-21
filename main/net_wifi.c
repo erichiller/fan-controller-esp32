@@ -137,14 +137,9 @@ esp_err_t WiFiEvent( void *ctx, system_event_t *event ) {
 		 **/
 		case SYSTEM_EVENT_STA_GOT_IP:	// ESP32 station got IP from connected AP
 			ESP_LOGI( LOGT, "SYSTEM_EVENT_STA_GOT_IP" );
-			timer_start( TIMER_GROUP_0, TIMER_0 );
-			// if ( hue_mbed_open_dtls() ) {
-			// 	ESP_LOGE( LOGT, "ERROR CONNECTING VIA MBED" );
-			// }
 			printf( "got ip:%s\n",
 					ip4addr_ntoa( &event->event_info.got_ip.ip_info.ip ) );
 			xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-			timer_set_alarm(TIMER_GROUP_0, TIMER_0, TIMER_ALARM_EN);
 			return ESP_OK;
 			break;
 		case SYSTEM_EVENT_STA_LOST_IP:	// ESP32 station lost IP and the IP is reset to 0

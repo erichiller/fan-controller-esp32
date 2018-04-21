@@ -15,6 +15,10 @@
 #define LOG_TAG_WEB_SERVER_LEVEL ESP_LOG_VERBOSE
 #define LOG_TAG_UI "UI_SCREEN"
 #define LOG_TAG_UI_LEVEL ESP_LOG_VERBOSE
+#define LOG_TAG_UI_BUTTON "ui_button"
+#define LOG_TAG_UI_BUTTON_LEVEL ESP_LOG_ERROR
+#define LOG_TAG_TELNET_SERVER "TELNET_SERVER"
+#define LOG_TAG_TELNET_SERVER_LEVEL ESP_LOG_VERBOSE
 
 
 
@@ -25,12 +29,18 @@ void inline static config_log_levels(){
 	esp_log_level_set(LOG_TAG_PWM, LOG_TAG_PWM_LEVEL);
 	esp_log_level_set(LOG_TAG_WEB_SERVER, LOG_TAG_WEB_SERVER_LEVEL);
 	esp_log_level_set(LOG_TAG_UI, LOG_TAG_UI_LEVEL);
+	esp_log_level_set(LOG_TAG_UI_BUTTON, LOG_TAG_UI_BUTTON_LEVEL);
 }
 
 /** WebServer **/
 #define WebServerTask_STACK_WORDS 8192
 #define WebServerTask_NAME "WebServerTask"
 #define WebServerTask_PRIORITY 2
+
+/** TelnetServer **/
+#define TelnetServerTask_STACK_WORDS 8192
+#define TelnetServerTask_NAME "TelnetServerTask"
+#define TelnetServerTask_PRIORITY 3
 
 
 /* wifi max wait time (miliseconds) */
@@ -65,5 +75,18 @@ void inline static config_log_levels(){
 #define LOG_COLOR_D LOG_COLOR( LOG_COLOR_GREEN )
 #undef LOG_COLOR_V
 #define LOG_COLOR_V LOG_BOLD( LOG_COLOR_WHITE )
+
+
+
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
 
 #endif
